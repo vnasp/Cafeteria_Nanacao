@@ -14,7 +14,7 @@ function loadData() {
   return cafes
 }
 
-// To be sure, load the max ID in the unknown data and sum 1.
+// To be sure, load the max serial ID in the unknown data and sum 1.
 function notExistingID(cafes) {
   const existingIds = cafes.map(c => c.id)
   const maxID = Math.max(...existingIds)
