@@ -2,30 +2,8 @@ const request = require("supertest")
 const server = require("../index")
 const { faker } = require('@faker-js/faker')
 const { generateToken } = require('./utils.js/login.js')
-const fs = require('fs')
-const path = require('path')
 require('dotenv').config()
 
-// Load the unknown data to do the testing.
-function loadData() {
-  const fileRoute = path.join(__dirname, '../cafes.json')
-  const cafesJSON = fs.readFileSync(fileRoute, 'utf8')
-  const cafes = JSON.parse(cafesJSON)
-  return cafes
-}
-
-// To be sure, load the max serial ID in the unknown data and sum 1.
-function notExistingID(cafes) {
-  const existingIds = cafes.map(c => c.id)
-  const maxID = Math.max(...existingIds)
-  return maxID + 1
-}
-
-// To select a random coffee from the unknown and mysterous data.
-function randomCafe(cafes) {
-  const randomIndex = Math.floor(Math.random() * cafes.length)
-  return cafes[randomIndex]
-}
 
 describe("CRUD Operations", () => {
 
@@ -39,7 +17,7 @@ describe("CRUD Operations", () => {
   })
 
   it("DELETE Get code 404 with not existing coffee ID", async () => {
-    const idTestCafe = notExistingID(loadData())
+    const idTestCafe = faker.string.alphanumeric()
     const token = generateToken()
     const response = await request(server).
       delete(`/cafes/${idTestCafe}`)
@@ -50,10 +28,9 @@ describe("CRUD Operations", () => {
 
 
   it("POST Get code 201 when add a new coffee", async () => {
-    const nameTestCafe = faker.commerce.productName()
     const cafePayload = {
-      id: notExistingID(loadData()),
-      nombre: nameTestCafe
+      id: faker.string.numeric(2),
+      nombre: faker.commerce.productName()
     }
     const response = await request(server)
       .post("/cafes")
@@ -63,12 +40,14 @@ describe("CRUD Operations", () => {
   })
 
   it("PUT Get code 400 when update a coffee, if you send an ID different to the payload ID", async () => {
-    const idTestCafe = notExistingID(loadData())
-    const cafes = loadData()
-    const randomTestCafe = randomCafe(cafes)
+    const idTestCafe = faker.string.alphanumeric()
+    const cafePayload = {
+      id: faker.string.numeric({min: 1, max:4}),
+      nombre: faker.commerce.productName()
+    }
     const response = await request(server)
       .put(`/cafes/${idTestCafe}`)
-      .send(randomTestCafe)
+      .send(cafePayload)
     expect(response.statusCode).toBe(400)
   })
 
